@@ -4,8 +4,8 @@
             if (idle && queue.length !== 0) {
                 var options = queue.shift();
                 idle = false;
-                var originalSuccess = options.success,
-                    originalError = options.error;
+                var originalSuccess = options.success || noop,
+                    originalError = options.error || noop;
                 options.success = function (data, textStatus, jqXhr) {
                     originalSuccess.apply(this, arguments);
                     next();
@@ -21,6 +21,7 @@
             idle = true;
             run();
         }
+        function noop(){}
         return function (url, options) {
             if (typeof url === "object") {
                 options = url;
