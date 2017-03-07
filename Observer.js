@@ -22,6 +22,7 @@ var Observer = (function () {
         });
     }
     function getListeners(type) {
+        type = type.toLowerCase();
         return message[type] || (message[type] = []);
     }
     function eachType(types, fn) {
