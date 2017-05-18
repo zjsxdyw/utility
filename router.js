@@ -1,5 +1,5 @@
 var Router = function(options) {
-
+    this.setupListeners();
 };
 Router.prototype = {
     map: function() {
