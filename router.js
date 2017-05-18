@@ -7,5 +7,10 @@ Router.prototype = {
     },
     transitionTo: function() {
         
+    },
+    setupListeners: function() {
+        window.addEventListener('hashchange', function () {
+            
+        });
     }
 };
