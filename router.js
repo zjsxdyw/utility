@@ -1,9 +1,11 @@
 (function(){
     var pathMap = {};
     var Router = function(options) {
-        if(options) this.map(options.map || []);
+        if(options) this.map(options || []);
         this.setupListeners();
-        ensureSlash();
+        if(ensureSlash()) {
+            this.transitionTo(getHash());
+        };
     };
     Router.prototype = {
         map: function(arr) {
