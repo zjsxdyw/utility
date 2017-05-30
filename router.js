@@ -1,8 +1,9 @@
 (function(){
-    var pathMap = {};
+    var pathMap = {},
+        task = [],
+        currentPath = '';
     var Router = function(options) {
         if(options) this.map(options || []);
-        this.currentPath = '';
         setupListeners();
         if(ensureSlash()) {
             transitionTo(getHash());
@@ -28,27 +29,38 @@
         },
         replaceHash: function(path) {
             replaceHash(path);
+        },
+        loadNext: function() {
+            notify();
         }
     };
+    function notify() {
+        if(!task.length) return;
+        var obj = task.shift();
+        obj.load.apply(obj.content, [].concat(obj.parameters));
+    }
     function setupListeners() {
-        var self = this;
         window.addEventListener('hashchange', function () {
             if (!ensureSlash()) {
                 return;
             }
+            task = [];
             transitionTo(getHash());
         });
     }
     function transitionTo(path) {
         path = path.replace(/\/?$/, '');
         replaceHash(path);
-        if (path === this.currentPath) return;
-        this.currentPath = path;
-        path.split('/').map(function (path) {
-            var pathInfo = pathMap[path];
-        })
-        if(!pathInfo || (path === this.currentPath) || (typeof pathInfo.load !== 'function')) return;
-        pathInfo.load.apply(pathInfo.content, [].concat(pathInfo.parameters));
+        if (path === currentPath) return;
+        currentPath = path;
+        var flag = path.split('/').every(function (path) {
+            if(pathMap[path]) {
+                task.push(pathMap[path]);
+                return true;
+            }
+            else return false;
+        });
+        if(flag) notify();
     }
     function ensureSlash() {
         var path = getHash();
