@@ -53,9 +53,11 @@
         replaceHash(path);
         if (path === currentPath) return;
         currentPath = path;
-        var flag = path.split('/').every(function (path) {
-            if(pathMap[path]) {
-                task.push(pathMap[path]);
+        var curMap = pathMap,
+            flag = path.split('/').every(function (path) {
+            if(curMap[path]) {
+                task.push(curMap[path]);
+                curMap = curMap[path].children;
                 return true;
             }
             else return false;
