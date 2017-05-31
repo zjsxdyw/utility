@@ -1,11 +1,13 @@
-(function(){
+(function () {
     var pathMap = {},
+        curMap,
         task = [],
         currentPath = '';
-    var Router = function(options) {
-        if(options) this.map(options || []);
+    var notEmpty = function (x) { return !!x };
+    var Router = function (options) {
+        if (options) this.map(options || []);
         setupListeners();
-        if(ensureSlash()) {
+        if (ensureSlash()) {
             transitionTo(getHash());
         }
     };
@@ -14,30 +16,36 @@
             var curMap = pathMap;
             arr.map(function (item) {
                 var paths = item.path.split('/');
-                paths.map(function (path) {
-                    if (path) {
+                paths.filter(notEmpty).map(function (path, i, arr) {
+                    if (arr.length - 1 === i) {
                         curMap[path] = item;
                         curMap[path].children = {};
-                        curMap = curMap[path].children;
+                    } else if(!curMap[path]){
+                        curMap[path] = { load: function () { }};
                     }
+                    curMap = curMap[path].children;
                 });
                 curMap = pathMap;
             });
         },
-        pushHash: function(path) {
+        pushHash: function (path) {
             window.location.hash = path;
         },
-        replaceHash: function(path) {
+        replaceHash: function (path) {
             replaceHash(path);
         },
-        loadNext: function() {
+        loadNext: function () {
             notify();
         }
     };
     function notify() {
-        if(!task.length) return;
-        var obj = task.shift();
-        obj.load.apply(obj.content, [].concat(obj.parameters));
+        if (!task.length) return;
+        var path = task.shift(),
+            obj = curMap[path];
+        if (obj) {
+            curMap = obj.children;
+            obj.load.apply(obj.content, [].concat(obj.parameters));
+        }
     }
     function setupListeners() {
         window.addEventListener('hashchange', function () {
@@ -49,20 +57,23 @@
         });
     }
     function transitionTo(path) {
-        path = path.replace(/\/?$/, '');
+        if (path !== '/') path = path.replace(/^\/?$/, '');
         replaceHash(path);
         if (path === currentPath) return;
+        var paths = path.split('/').filter(notEmpty),
+            oldPaths = currentPath.split('/').filter(notEmpty),
+            isCompared = true;
+        curMap = pathMap;
         currentPath = path;
-        var curMap = pathMap,
-            flag = path.split('/').every(function (path) {
-            if(curMap[path]) {
-                task.push(curMap[path]);
-                curMap = curMap[path].children;
-                return true;
+        for (var i = 0, m = paths.length, n = oldPaths.length; i < m; i++) {
+            if (isCompared && paths[i] === oldPaths[i]) {
+                curMap = curMap[paths[i]].children;
+            } else {
+                isCompared = false;
+                task.push(paths[i]);
             }
-            else return false;
-        });
-        if(flag) notify();
+        }
+        notify();
     }
     function ensureSlash() {
         var path = getHash();
