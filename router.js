@@ -20,8 +20,8 @@
                     if (arr.length - 1 === i) {
                         curMap[path] = item;
                         curMap[path].children = {};
-                    } else if(!curMap[path]){
-                        curMap[path] = { load: function () { }};
+                    } else if (!curMap[path]) {
+                        curMap[path] = { load: function () { } };
                     }
                     curMap = curMap[path].children;
                 });
@@ -57,7 +57,7 @@
         });
     }
     function transitionTo(path) {
-        if (path !== '/') path = path.replace(/^\/?$/, '');
+        if (path !== '/') path = path.replace(/\/\//g, '/').replace(/\/?$/, '');
         replaceHash(path);
         if (path === currentPath) return;
         var paths = path.split('/').filter(notEmpty),
@@ -67,6 +67,10 @@
         currentPath = path;
         for (var i = 0, m = paths.length, n = oldPaths.length; i < m; i++) {
             if (isCompared && paths[i] === oldPaths[i]) {
+                if (i === m - 1) {
+                    task.push(paths[i]);
+                    break;
+                }
                 curMap = curMap[paths[i]].children;
             } else {
                 isCompared = false;
