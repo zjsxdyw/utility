@@ -4,8 +4,11 @@
         task = [],
         currentPath = '';
     var notEmpty = function (x) { return !!x };
+    var isFunction = function (fn) {
+        return Object.prototype.toString.call(fn) === '[object Function]';
+    }
     var Router = function (options) {
-        if (options) this.map(options || []);
+        if (Array.isArray(options)) this.map(options);
         setupListeners();
         if (ensureSlash()) {
             transitionTo(getHash());
@@ -17,12 +20,10 @@
             arr.map(function (item) {
                 var paths = item.path.split('/');
                 paths.filter(notEmpty).map(function (path, i, arr) {
-                    if (arr.length - 1 === i) {
-                        curMap[path] = item;
-                        curMap[path].children = {};
-                    } else if (!curMap[path]) {
-                        curMap[path] = { load: function () { } };
-                    }
+                    if (arr.length - 1 === i) curMap[path] = item;
+                    else if (!curMap[path]) curMap[path] = {};
+                    if (!curMap[path].children) curMap[path].children = {};
+                    if (!isFunction(curMap[path].load)) curMap[path].load = function () { notify() };
                     curMap = curMap[path].children;
                 });
                 curMap = pathMap;
@@ -44,14 +45,12 @@
             obj = curMap[path];
         if (obj) {
             curMap = obj.children;
-            obj.load.apply(obj.content, [].concat(obj.parameters));
+            obj.load.apply(obj, [].concat(obj.parameters));
         }
     }
     function setupListeners() {
         window.addEventListener('hashchange', function () {
-            if (!ensureSlash()) {
-                return;
-            }
+            if (!ensureSlash()) return;
             task = [];
             transitionTo(getHash());
         });
