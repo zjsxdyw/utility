@@ -23,7 +23,7 @@
                     if (arr.length - 1 === i) curMap[path] = item;
                     else if (!curMap[path]) curMap[path] = {};
                     if (!isFunction(curMap[path].load)) curMap[path].load = notify;
-                    curMap[path].children = {};
+                    if (!curMap[path].children) curMap[path].children = {};
                     curMap[path].next = notify;
                     curMap = curMap[path].children;
                 });
