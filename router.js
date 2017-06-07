@@ -22,8 +22,8 @@
                 paths.filter(notEmpty).map(function (path, i, arr) {
                     if (arr.length - 1 === i) curMap[path] = item;
                     else if (!curMap[path]) curMap[path] = {};
-                    if (!curMap[path].children) curMap[path].children = {};
                     if (!isFunction(curMap[path].load)) curMap[path].load = notify;
+                    curMap[path].children = {};
                     curMap[path].next = notify;
                     curMap = curMap[path].children;
                 });
