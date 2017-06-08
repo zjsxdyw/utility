@@ -3,10 +3,12 @@
         curMap,
         task = [],
         currentPath = '';
-    var notEmpty = function (x) { return !!x };
+    var removeSlash = function (str) {
+        return str.replace(/\/\/*/g, '/').replace(/\/?$/, '')
+    };
     var isFunction = function (fn) {
         return Object.prototype.toString.call(fn) === '[object Function]';
-    }
+    };
     var Router = function (options) {
         if (Array.isArray(options)) this.map(options);
         setupListeners();
@@ -18,13 +20,12 @@
         map: function (arr) {
             var curMap = pathMap;
             arr.map(function (item) {
-                var paths = item.path.split('/');
-                paths.filter(notEmpty).map(function (path, i, arr) {
+                var paths = removeSlash(item.path).replace(/^\//, '').split('/');
+                paths.map(function (path, i, arr) {
                     if (arr.length - 1 === i) curMap[path] = item;
                     else if (!curMap[path]) curMap[path] = {};
-                    if (!isFunction(curMap[path].load)) curMap[path].load = notify;
                     if (!curMap[path].children) curMap[path].children = {};
-                    curMap[path].next = notify;
+                    if (!isFunction(curMap[path].load)) curMap[path].load = notify;
                     curMap = curMap[path].children;
                 });
                 curMap = pathMap;
@@ -35,9 +36,9 @@
         },
         replaceHash: function (path) {
             replaceHash(path);
-        },
-        next: notify
+        }
     };
+    Router.next = notify;
     function notify() {
         if (!task.length) return;
         var path = task.shift(),
@@ -55,11 +56,11 @@
         });
     }
     function transitionTo(path) {
-        if (path !== '/') path = path.replace(/\/\//g, '/').replace(/\/?$/, '');
+        if (path !== '/') path = removeSlash(path);
         replaceHash(path);
         if (path === currentPath) return;
-        var paths = path.split('/').filter(notEmpty),
-            oldPaths = currentPath.split('/').filter(notEmpty),
+        var paths = path.replace(/^\//, '').split('/'),
+            oldPaths = currentPath.replace(/^\//, '').split('/'),
             isCompared = true;
         curMap = pathMap;
         currentPath = path;
