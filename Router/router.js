@@ -31,6 +31,15 @@
                 curMap = pathMap;
             });
         },
+        remove: function (path) {
+            var curMap = pathMap,
+                paths = removeSlash(path).replace(/^\//, '').split('/');
+            for (var i = 0, len = paths.length; i < len; i++) {
+                if (len - 1 === i) delete curMap[path];
+                else if (!curMap[path]) break;
+                curMap = curMap[path].children;
+            }
+        },
         pushHash: function (path) {
             window.location.hash = path;
         },
