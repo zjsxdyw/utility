@@ -52,7 +52,7 @@
     };
     Router.hasNext = function(){ return task.length > 0; };
     Router.next = notify;
-    Router.samePathReload = true;
+    Router.samePathReload = false;
     function notify() {
         if (!task.length) return;
         var path = task.shift(),
@@ -72,7 +72,7 @@
     function transitionTo(path) {
         if (path !== '/') path = removeSlash(path);
         replaceHash(path);
-        if (Router.samePathReload && path === currentPath) return;
+        if (!Router.samePathReload && path === currentPath) return;
         var paths = path.replace(/^\//, '').split('/'),
             oldPaths = currentPath.replace(/^\//, '').split('/'),
             isCompared = true;
