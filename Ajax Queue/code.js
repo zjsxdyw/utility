@@ -33,14 +33,14 @@ var ajaxForCallback = (function (_ajax) {
          run();
      };
  })($.ajax);
-var ajaxForPromise = (function(_ajax) {
-    var promise = $.Deferred().resolve();
+var ajaxForPromise = (function($) {
+    var promise = $.Deferred().resolve(),
+        ajax = $.ajax;
     return function() {
-        var args = [].slice.call(arguments),
-            self = this;
+        var args = [].slice.call(arguments);
         promise = promise.then(function() {
-            return _ajax.apply(self, args);
+            return ajax.apply($, args);
         });
         return promise;
     }
-})($.ajax);
+})($);
