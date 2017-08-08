@@ -1,46 +1,37 @@
-var ajaxForCallback = (function (_ajax) {
-     var queue = [], idle = true;
-     function run() {
-         if (idle && queue.length !== 0) {
-             var options = queue.shift();
-             idle = false;
-             var originalSuccess = options.success || noop,
-                 originalError = options.error || noop;
-             options.success = function (data, textStatus, jqXhr) {
-                 originalSuccess.apply(this, arguments);
-                 next();
-             };
-             options.error = function (data, textStatus, jqXhr) {
-                 originalError.apply(this, arguments);
-                 next();
-             };
-             _ajax(options);
-         }
-     }
-     function next() {
-         idle = true;
-         run();
-     }
-     function noop(){}
-     return function (url, options) {
-         if (typeof url === "object") {
-             options = url;
-             url = undefined;
-         } else {
-             options.url = url;
-         }
-         queue.push(options);
-         run();
-     };
- })($.ajax);
-var ajaxForPromise = (function($) {
-    var promise = $.Deferred().resolve(),
-        ajax = $.ajax;
+var ajaxForQueue = (function($) {
+    var queue = [],
+        idle = true,
+        _ajax = $.ajax;
+
+    function run() {
+        if (idle && queue.length !== 0) {
+            var obj = queue.shift(),
+                args = obj.args,
+                deferred = obj.deferred;
+            idle = false;
+            _ajax.apply($, obj.args).then(function() {
+                deferred.resolve(arguments);
+                next();
+            }).fail(function() {
+                deferred.reject(arguments);
+                next();
+            });
+        }
+    }
+
+    function next() {
+        idle = true;
+        run();
+    }
+
     return function() {
+        var deferred = $.Deferred();
         var args = [].slice.call(arguments);
-        promise = promise.then(function() {
-            return ajax.apply($, args);
+        queue.push({
+            deferred:deferred,
+            args: args
         });
-        return promise;
+        run();
+        return deferred;
     }
 })($);
