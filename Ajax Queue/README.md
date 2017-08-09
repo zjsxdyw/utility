@@ -7,5 +7,5 @@ $.ajax('/get/D', options);
 $.ajax('/get/E', options);
 ```
 对大多数浏览器来说并发的请求数的大致是4-8个，超过并发数后请求的响应会变得非常慢。<br>
-因此我们可以使用ajaxForQueue（code.js里提供两种方案）来确保每次只发一个请求减少浏览器并发数从而加快响应速度。<br>
+因此我们可以使用ajaxForQueue（code.js里提供两种方案）来替代$.ajax确保每次只发一个请求减少浏览器并发数从而加快响应速度。<br>
 该方法支持success、fail式回调和.done.fail式回调。
