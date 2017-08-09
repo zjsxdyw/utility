@@ -47,10 +47,10 @@ var ajaxForQueue = (function($) {
                 deferred = obj.deferred;
             idle = false;
             _ajax.apply($, obj.args).then(function() {
-                deferred.resolve(arguments);
+                deferred.resolve.apply(deferred, [].slice.call(arguments));
                 next();
             }).fail(function() {
-                deferred.reject(arguments);
+                deferred.reject.apply(deferred, [].slice.call(arguments));
                 next();
             });
         }
