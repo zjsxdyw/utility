@@ -46,7 +46,7 @@ var ajaxForQueue = (function($) {
                 args = obj.args,
                 deferred = obj.deferred;
             idle = false;
-            _ajax.apply($, obj.args).then(function() {
+            _ajax.apply($, args).then(function() {
                 deferred.resolve.apply(deferred, [].slice.call(arguments));
                 next();
             }).fail(function() {
