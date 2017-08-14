@@ -4,7 +4,7 @@
         task = [],
         currentPath = '';
     var removeSlash = function (str) {
-        return str.replace(/\/\/*/g, '/').replace(/\/?$/, '')
+        return str.replace(/\/\/*/g, '/').replace(/\/?$/, '');
     };
     var isFunction = function (fn) {
         return Object.prototype.toString.call(fn) === '[object Function]';
@@ -22,6 +22,7 @@
             arr.map(function (item) {
                 var paths = removeSlash(item.path).replace(/^\//, '').split('/');
                 paths.map(function (path, i, arr) {
+                    path = path.toLowerCase();
                     if (arr.length - 1 === i) curMap[path] = item;
                     else if (!curMap[path]) curMap[path] = {};
                     if (!curMap[path].children) curMap[path].children = {};
@@ -43,16 +44,21 @@
                 curMap = curMap[paths[i]].children;
             }
         },
-        pushHash: function (path) {
-            window.location.hash = path;
+        pushHash: function (path, refresh) {
+            path = path.replace(/^#(\/)?/, '');
+            if (window.location.hash.replace(/^#(\/)?/, '') === path && refresh) {
+                task = [];
+                transitionTo(path, true);
+            } else {
+                window.location.hash = path;
+            }
         },
         replaceHash: function (path) {
             replaceHash(path);
         }
     };
-    Router.hasNext = function(){ return task.length > 0; };
+    Router.hasNext = function () { return !!task.length };
     Router.next = notify;
-    Router.samePathReload = false;
     function notify() {
         if (!task.length) return;
         var path = task.shift(),
@@ -69,10 +75,11 @@
             transitionTo(getHash());
         });
     }
-    function transitionTo(path) {
+    function transitionTo(path, refresh) {
         if (path !== '/') path = removeSlash(path);
         replaceHash(path);
-        if (!Router.samePathReload && path === currentPath) return;
+        path = path.toLowerCase();
+        if (path === currentPath && !refresh) return;
         var paths = path.replace(/^\//, '').split('/'),
             oldPaths = currentPath.replace(/^\//, '').split('/'),
             isCompared = true;
