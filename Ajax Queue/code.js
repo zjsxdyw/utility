@@ -1,74 +1,95 @@
-// Plan A
-var ajaxForQueue = (function($) {
-    var queue = [],
+function queue(num) {
+    const PENDING = 'pending';
+    const PREPARATION = 'preparation';
+    const DONE = 'done';
+    let queue = [],
+        paused = false,
         _ajax = $.ajax;
-
-    function next(done) {
-        if(done) {
-            queue.shift();
-        }
-        if(queue.length) {
-            queue[0].resolve();
+    num = num || 1;
+    
+    function next() {
+        if (paused) return;
+        let i = 0;
+        while(i < num && i < queue.length) {
+            switch(queue[i].state) {
+                case DONE:
+                    queue.splice(i, 1);
+                    break;
+                case PREPARATION:
+                    send(queue[i]);
+                case PENDING:
+                    i++;
+                    break;
+            }
         }
     }
 
-    return function() {
-        var deferred = $.Deferred(),
-            promise = $.Deferred(),
-            args = [].slice.call(arguments);
+    function send(obj) {
+        obj.state = PENDING;
+        obj.ajax = _ajax(obj.options).then(callback(obj, 'resolve')).fail(callback(obj, 'reject'));
+    }
 
-        queue.push(promise);
+    function setCallback(deferred, options) {
+        deferred.then(options.success).fail(options.error);
+        delete options.success;
+        delete options.error;
+    }
 
-        promise.then(function() {
-            return _ajax.apply($, args);
-        }).then(function() {
-            deferred.resolve.apply(deferred, [].slice.call(arguments));
-            next(true);
-        }).fail(function() {
-            deferred.reject.apply(deferred, [].slice.call(arguments));
-            next(true);
+    function callback(obj, action) {
+        return function() {
+            obj.state = DONE;
+            obj.deferred[action].apply(obj.deferred, arguments);
+            next();
+        }
+    }
+
+    function ajax(url, options) {
+        let deferred = $.Deferred();
+
+        if (typeof url === "object") {
+            options = url;
+            url = undefined;
+        } else {
+            options = options || {};
+            options.url = url;
+        }
+
+        setCallback(deferred, options);
+
+        queue.push({
+            options: options,
+            deferred: deferred,
+            state: PREPARATION
         });
 
         next();
 
         return deferred;
     }
-})($);
-// Plan B
-var ajaxForQueue = (function($) {
-    var queue = [],
-        idle = true,
-        _ajax = $.ajax;
 
-    function run() {
-        if (idle && queue.length !== 0) {
-            var obj = queue.shift(),
-                args = obj.args,
-                deferred = obj.deferred;
-            idle = false;
-            _ajax.apply($, args).then(function() {
-                deferred.resolve.apply(deferred, [].slice.call(arguments));
-                next();
-            }).fail(function() {
-                deferred.reject.apply(deferred, [].slice.call(arguments));
-                next();
-            });
-        }
+    function pause() {
+        paused = true;
     }
 
-    function next() {
-        idle = true;
-        run();
+    function goon() {
+        paused = false;
+        next();
     }
 
-    return function() {
-        var deferred = $.Deferred();
-        var args = [].slice.call(arguments);
-        queue.push({
-            deferred:deferred,
-            args: args
+    function stop() {
+        let arr = queue.filter(function(obj) {
+            return obj.state === PENDING;
         });
-        run();
-        return deferred;
+        queue = [];
+        arr.forEach(function(obj) {
+            obj.ajax.abort();
+        });
     }
-})($);
+
+    return {
+        ajax,
+        stop,
+        goon,
+        pause
+    }
+}
