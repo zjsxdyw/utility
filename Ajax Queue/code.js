@@ -26,7 +26,8 @@ function queue(num) {
 
     function send(obj) {
         obj.state = PENDING;
-        obj.ajax = _ajax(obj.options).then(callback(obj, 'resolve')).fail(callback(obj, 'reject'));
+        obj.ajax = _ajax(obj.options);
+        obj.ajax.then(callback(obj, 'resolve')).fail(callback(obj, 'reject'));
     }
 
     function setCallback(deferred, options) {
