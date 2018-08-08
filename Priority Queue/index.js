@@ -19,7 +19,7 @@ class PriorityQueue {
       this.heap[0] = null;
       return last;
     }
-    const item = this.heap[1];
+    item = this.heap[1];
     const temp = this.heap.pop();
     let i = 1;
     for(let j = i << 1, len = this.heap.length; j < len; i = j, j = i << 1) {
