@@ -37,6 +37,7 @@ class PriorityQueue {
     let i = this.heap.indexOf(item);
     if(i === -1) return false;
     const temp = this.heap.pop();
+    if(item === temp) return true;
     for(let j = i << 1, len = this.heap.length; j < len; i = j, j = i << 1) {
       if(j < len - 1 && this.compare(this.heap[j], this.heap[j+1]) > 0) {
         j++;
