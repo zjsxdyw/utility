@@ -53,8 +53,12 @@ class PriorityQueue {
   peek() {
     return this.isEmpty() ? null : this.heap[1];
   }
+
+  size() {
+    return this.heap.length - 1;
+  }
   
   isEmpty() {
-    return this.heap.length === 1;
+    return this.size() === 0;
   }
 }
