@@ -1,6 +1,7 @@
 class PriorityQueue {
   constructor(fn) {
     this.heap = [null];
+    if(!fn) fn = (a, b) => { return a - b };
     this.compare = fn;
   }
   
