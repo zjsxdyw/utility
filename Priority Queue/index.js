@@ -14,7 +14,7 @@ class PriorityQueue {
   }
   
   remove(item) {
-    if(item) return this.removeItem(item);
+    if(typeof item !== 'undefined') return this.removeItem(item);
     if(this.heap.length < 3) {
       const last = this.heap.pop();
       this.heap[0] = null;
