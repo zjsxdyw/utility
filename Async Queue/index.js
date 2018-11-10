@@ -17,7 +17,7 @@ class AsyncQueue {
     run() {
         while(this.set.size < this.length && this.queue.length) {
             let { uid, fn } = this.queue.shift();
-            fn();
+            fn(uid);
         }
     }
 
