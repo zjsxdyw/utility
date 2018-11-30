@@ -43,7 +43,7 @@ const createRequest = (send, check, login) => {
 
 // plan B
 // https://www.npmjs.com/package/ajax-hook
-const hookAjax = require("ajax-hook");
+const hookAjax = require("ajax-hook").hookAjax;
 const map = {};
 const realxhr = XMLHttpRequest;
 let uid = 0;
