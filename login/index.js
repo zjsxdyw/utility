@@ -47,8 +47,10 @@ const hookAjax = require("ajax-hook").hookAjax;
 const map = {};
 const realxhr = XMLHttpRequest;
 let uid = 0;
+let isLogin = false;
 
 const done = () => {
+  isLogin = false;
   for(let key in map) {
     let xhr = new realxhr;
     for(let obj of map[key]) {
@@ -72,7 +74,10 @@ const interceptor = (check, login) => {
         fn: xhr[event],
         xhr
       });
-      login(done);
+      if(!isLogin) {
+        isLogin = true;
+        login(done);
+      }
       return true;
     }
     delete map[xhr.uid];
