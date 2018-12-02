@@ -44,29 +44,40 @@ const createRequest = (send, check, login) => {
 // plan B
 // https://www.npmjs.com/package/ajax-hook
 const hookAjax = require("ajax-hook").hookAjax;
-const map = {};
-const realxhr = XMLHttpRequest;
-let uid = 0;
-let isLogin = false;
 
-const done = () => {
-  isLogin = false;
-  for(let key in map) {
-    let xhr = new realxhr;
-    for(let obj of map[key]) {
-      if(obj.method) {
-        xhr[obj.method].apply(xhr, obj.arg);
-      } else if(obj.event) {
-        xhr[obj.event] = function() {
-          obj.fn.apply(obj.xhr, arguments);
+const interceptor = (check, login) => {
+  const map = {};
+  const realxhr = XMLHttpRequest;
+  let uid = 0;
+  let isLogin = false;
+
+  const success = () => {
+    isLogin = false;
+    for(let key in map) {
+      let xhr = new realxhr;
+      for(let obj of map[key]) {
+        if(obj.method) {
+          xhr[obj.method].apply(xhr, obj.arg);
+        } else if(obj.event) {
+          xhr[obj.event] = (...args) => {
+            obj.fn.apply(obj.xhr, args);
+          }
         }
       }
     }
   }
-}
 
+  const error = (...args) => {
+    for(let key in map) {
+      for(let obj of map[key]) {
+        if(obj.event === 'onerror') {
+          obj.fn.apply(obj.xhr, args);
+          break;
+        }
+      }
+    }
+  }
 
-const interceptor = (check, login) => {
   const handler = (xhr, event) => {
     if(check(xhr)) {
       map[xhr.uid].push({
@@ -76,7 +87,10 @@ const interceptor = (check, login) => {
       });
       if(!isLogin) {
         isLogin = true;
-        login(done);
+        let p = login(success, error);
+        if(p instanceof Promise) {
+          p.then(success).catch(error);
+        }
       }
       return true;
     }
