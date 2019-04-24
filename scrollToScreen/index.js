@@ -1,7 +1,7 @@
 /**
  * @params dom {HTMLElement} - 要移动的元素
  * @params scrollDom {HTMLElement} - 含有滚动条的元素
- * @params extraOffset {Object} - 额外添加的offset
+ * @params extraDom {HTMLElement} - 额外添加offset的元素
  */
 // jQuery版本
 const scrollToScreen = (dom, scrollDom, extraDom) => {
