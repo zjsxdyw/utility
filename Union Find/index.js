@@ -36,13 +36,13 @@ class UnionFind {
   
   find(x) {
     if(this.parents[x] !== x)
-      this.parents[x] = find(this.parents[x]);
+      this.parents[x] = this.find(this.parents[x]);
     return this.parents[x];
   }
   
   union(x, y) {
-    let xRoot = find(x);
-    let yRoot = find(y);
+    let xRoot = this.find(x);
+    let yRoot = this.find(y);
     if(xRoot === yRoot) return;
 
     if(this.ranks[xRoot] < this.ranks[yRoot])
